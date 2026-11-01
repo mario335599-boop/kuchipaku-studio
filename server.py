@@ -25,7 +25,7 @@ class Handler(SimpleHTTPRequestHandler):
         except ValueError: return False
         return hostname in ('127.0.0.1','localhost','::1') and self.headers.get('Origin') in (None,'null','http://'+host,PUBLIC_WEB_ORIGIN)
     def end_headers(self):
-        if self.headers.get('Origin') in ('null',PUBLIC_WEB_ORIGIN) and self.path.startswith(('/capabilities','/transcribe','/reading','/convert')):
+        if self.headers.get('Origin') in ('null',PUBLIC_WEB_ORIGIN) and (self.path in ('/capabilities','/transcribe','/reading','/convert') or self.path.startswith('/transcribe/')):
             self.send_header('Access-Control-Allow-Origin',self.headers['Origin'])
             self.send_header('Vary','Origin')
         super().end_headers()
