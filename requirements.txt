@@ -1,0 +1,4 @@
+imageio-ffmpeg==0.7.0
+faster-whisper==1.2.1
+fugashi==1.5.2
+unidic-lite==1.0.8
