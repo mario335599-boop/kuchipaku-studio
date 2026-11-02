@@ -97,7 +97,7 @@ def transcribe(data,progress=lambda message:None):
  with wave.open(io.BytesIO(data),'rb') as wav:
   if wav.getnchannels()!=1 or wav.getsampwidth()!=2 or wav.getframerate()!=16000:raise ValueError('認識用音声は16kHz・モノラルのWAVにしてください。')
   duration=wav.getnframes()/16000
-  if not 0<duration<=60.01:raise ValueError('音声は60秒以内にしてください。')
+  if not 0<duration<=300:raise ValueError('音声は5分以内にしてください。')
   audio=np.frombuffer(wav.readframes(wav.getnframes()),dtype='<i2').astype(np.float32)/32768
  if not len(audio) or float(np.max(np.abs(audio)))<.0001:return {'cues':[],'duration':duration,'language':'ja'}
  progress('音声認識の準備をしています…')

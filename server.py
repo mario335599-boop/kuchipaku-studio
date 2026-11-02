@@ -55,7 +55,7 @@ class Handler(SimpleHTTPRequestHandler):
             if not speech.available():self.json_response({'message':'自動字幕の準備が必要です。起動ファイルから開き直してください。'},503);return
             try:
                 size=int(self.headers.get('Content-Length','0'))
-                if not 0<size<=(2_100_000 if self.path=='/transcribe' else 16000):raise ValueError('音声や文章の容量を確認してください。')
+                if not 0<size<=(10_000_000 if self.path=='/transcribe' else 16000):raise ValueError('音声や文章の容量を確認してください。')
                 data=self.rfile.read(size)
                 if self.path=='/reading':
                     text=json.loads(data).get('text','')
@@ -71,12 +71,12 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             size = int(self.headers.get('Content-Length','0'))
             duration = float(self.headers.get('X-Video-Duration','0'))
-            if not 0 < size <= 120_000_000 or not math.isfinite(duration) or not 0 < duration <= 60.1:
+            if not 0 < size <= 600_000_000 or not math.isfinite(duration) or not 0 < duration <= 300:
                 self.send_error(400); return
             with tempfile.TemporaryDirectory(prefix='kaman-') as temp:
                 src, dst = Path(temp)/'input.webm', Path(temp)/'output.mp4'
                 src.write_bytes(self.rfile.read(size))
-                p = subprocess.run([binary,'-v','error','-y','-i',str(src),'-t',str(duration),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-vf','fps=30','-c:a','aac','-b:a','192k','-movflags','+faststart',str(dst)], capture_output=True, timeout=120)
+                p = subprocess.run([binary,'-v','error','-y','-i',str(src),'-t',str(duration),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-vf','fps=30','-c:a','aac','-b:a','192k','-movflags','+faststart',str(dst)], capture_output=True, timeout=600)
                 if p.returncode: self.send_error(422, 'Video conversion failed'); return
                 data=dst.read_bytes()
             self.send_response(200);self.send_header('Content-Type','video/mp4');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
