@@ -1,11 +1,17 @@
 """Bundle a single offline HTML and a source distribution without requiring Node."""
 from pathlib import Path
-import json,re,zipfile,shutil
+import json,re,zipfile,shutil,hashlib
 ROOT=Path(__file__).resolve().parents[1]
 (ROOT/'assets/character-kit.js').write_text('const PACK_CHARACTER_SCRIPT='+json.dumps((ROOT/'tools/pack_character.py').read_text(),ensure_ascii=False)+';\n')
 html=(ROOT/'index.html').read_text()
+def version_script(m):
+ path=m.group(1).split('?')[0]
+ digest=hashlib.sha256((ROOT/path).read_bytes()).hexdigest()[:12]
+ return '<script src="'+path+'?v='+digest+'"></script>'
+html=re.sub(r'<script src="([^"]+)"></script>',version_script,html)
+(ROOT/'index.html').write_text(html)
 def inline(m):
- text=(ROOT/m.group(1)).read_text().replace('</script','<\\/script')
+ text=(ROOT/m.group(1).split('?')[0]).read_text().replace('</script','<\\/script')
  return '<script>\n'+text+'\n</script>'
 html=re.sub(r'<script src="([^"]+)"></script>',inline,html)
 (ROOT/'口パクスタジオ.html').write_text(html)
